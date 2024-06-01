@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-w/github-markdown-css/5.1.0/github-markdown.min.css">
+<link rel="stylesheet" href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-w/highlight.js/11.4.0/styles/github.min.css">
+<script type="application/javascript" src="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-w/showdown/2.0.0/showdown.min.js"></script>
+<script type="application/javascript" src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-w/highlight.js/11.4.0/highlight.min.js"></script>
+<script>
+// API Key，需要先在 OpenAI 平台申请
+const key = "none";
+
+// 设置 Markdown 转换器为 GitHub 风格
+showdown.setFlavor('github');
+
+// 创建一个 Markdown 转换器对象
+var converter = new showdown.Converter();
+
+// 保存聊天记录的数组
+var msgs = [];
+
+/**
+ * @param {boolean} ai - 标识是否为机器人回复的消息，如果是，则聊天框背景色会有所不同
+ * @returns {HTMLElement} - 新创建的聊天框的DOM对象
+ */
+ function newbox(ai) {
+	// 获取聊天框DOM对象
+	var chats = document.getElementById("chat");
+	// 判断是否滚动到聊天框底部
+	var bottom = chats.scrollTop + chats.clientHeight - chats.scrollHeight >= -16;
+	// 创建一个div元素作为新的聊天框
+	var box = document.createElement("div");
+	// 给新创建的聊天框添加CSS样式
+	box.className = "markdown-body";
+	// 判断是否是机器人回复，如果是则更改聊天框背景色
+	if(ai) box.style = "background: #f7f7f8d0;";
+	// 将新创建的聊天框添加到聊天框列表中
+	chats.appendChild(box);
+	// 判断是否需要滚动聊天框到底部
+	if(bottom) chats.scrollTo(0, chats.scrollHeight);
+	// 返回新创建的聊天框的DOM对象
+	return box;
+  }
+  
+// 该函数用于从文本中找到一个代码块的起始符，并返回包含该起始符的字符串。
+// text: 需要处理的文本。
+function fixcode(text) {
+	// 匹配代码块的正则表达式，用于匹配由三个或以上反引号包围的代码块。
+	var ticks = text.match(/^ *`{3,}.*$/gm);
+	// 如果没有匹配到代码块，则返回一个空字符串。
+	if (!ticks) return "";
+	// 初始化变量 tick 和 las。
+	var tick, las = 0;
+	// 遍历所有匹配到的代码块。
+	for (var t of ticks) {
+	  // 匹配代码块起始符号和前面的空格，并将结果存入 tick 变量中。
+	  tick = t.match(/( *(`{3,}))/);
+	  // 如果 las 为 0，则将 las 设置为 tick[2] 的长度。
+	  if (las === 0) las = tick[2].length;
+	  // 如果 las 等于 tick[2] 的长度，则将 las 设置为 0。
+	  else if (las === tick[2].length) las = 0;
+	}
+	// 如果 las 为 0，则返回一个空字符串，否则返回一个包含 tick[1] 的字符串。
+	return las === 0 ? "" : "\n" + tick[1];
+  }
+  
+/**
+ * 在指定的对话框中显示一条消息
+ * @param {HTMLDivElement} box - 要在其中显示消息的对话框
+ * @param {string} text - 要显示的文本消息
+ */
+ function setmsg(box, text) {
+	// 获取对话框元素
+	var chats = document.getElementById("chat");
+	// 判断对话框是否滚动到底部
+	var bottom = chats.scrollTop + chats.clientHeight - chats.scrollHeight >= -16;
+	// 使用 Markdown 转换器将文本消息转换为 HTML
+	box.innerHTML = converter.makeHtml(text + fixcode(text));
+	// 高亮显示代码块
+	box.querySelectorAll("pre code").forEach(e => { hljs.highlightElement(e); });
+	// 如果对话框已经滚动到底部，自动滚动到最底部
+	if(bottom)chats.scrollTo(0, chats.scrollHeight);
+  }
+  
+/*
+函数名称：submit
+参数：无
+返回值：无
+
+功能：
+当用户在输入框中提交问题时，该函数会发送POST请求到OpenAI的API，以获取对话的回复。获取回复后，该函数将回复显示到聊天窗口中，并将对话信息存储在全局变量msgs中。
+*/
+  function submit() {
+	// 获取输入框的值
+	var edit = document.getElementById("input");
+	var s_user = edit.value;
+	// 清空输入框
+	edit.value = '';
+	// 将用户输入添加到聊天窗口中
+	setmsg(newbox(false), s_user);
+	// 将用户输入添加到消息数组中，表示这是用户发出的消息
+	msgs.push({"role": "user", "content": s_user});
+	// 向OpenAI API发送请求
+	fetch("http://127.0.0.1:7860/v1/chat/completions", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+            "Authorization": "Bearer " + key
+		},
+		// 设置请求的参数
+		body: JSON.stringify({"model": "gpt-3.5-turbo", "top_p":0.7, "temperature":0.9, "max_tokens":2048, "stream": true, "messages": msgs})
+	}).then(response => {
+		// 如果请求不成功
+		if(response.status !== 200) {
+			// 弹出错误提示
+			alert("ERROR: status = " + response.status);
+			return;
+		}
+		// 创建一个新的聊天窗口，用于显示响应内容
+		var box = newbox(true);
+		// 创建一个用于读取响应数据的流
+		var reader = response.body.getReader();
+		// 创建一个解码器，用于将字节流转换为字符串
+		var decoder = new TextDecoder();
+		// 创建一个缓冲区，用于存储读取的字节
+		var buff = "";
+		// 创建一个变量，用于存储助手发出的消息
+		var s_assistant = "";
+		// 开始读取响应流
+		reader.read().then(function processStream(result) {
+			// 如果读取完成
+			if(result.done) {
+				// 将助手发出的消息添加到消息数组中，表示这是助手发出的消息
+				msgs.push({"role": "assistant", "content": s_assistant});
+				return;
+			}
+			// 将读取到的字节添加到缓冲区中
+			buff += decoder.decode(result.value, {stream: true});
+			// 将缓冲区中的内容按照分隔符切分为多个段落
+			var chunks = buff.match(/[^]*?\n/g);
+			// 将已经切分出来的内容从缓冲区中删除
+			buff = buff.replace(/[^]*?\n/g, '');
+			// 如果有内容被切分出来
+			if(chunks) {
+				// 遍历每个段落
+				for(var chunk of chunks) {
+					// 从段落中提取JSON数据
+					var data = chunk.match(/data: ({.*})/);
+					if(!data)continue;
+					// 将JSON数据解析成JavaScript对象
+					var body = JSON.parse(data[1]);
+					// 从响应中提取助手发出的消息
+					var delta = body["choices"][0]["delta"];
+
+					if(delta.hasOwnProperty("content")) {
+                        if (!(delta["content"]==null))
+                        {
+                            s_assistant += delta["content"];
+                        }
+                    }
+				}
+				// 在聊天框中显示回复消息
+				setmsg(box, s_assistant);
+			}
+			// 继续读取响应流中的数据
+			reader.read().then(processStream);
+		});
+	}).catch(error => {alert("ERROR: " + error);});
+}
+</script>
+<style>
+body{
+	background: seagreen;
+}
+container{
+	display: block;
+	margin: 0 auto;
+	width: 80vw;
+}
+div.div-chat{
+	overflow-y: auto;
+	width: 100%;
+	height: 89vh;
+}
+.markdown-body{
+	background: #ffffffd7;
+	box-sizing: border-box;
+	padding: 45px;
+}
+.markdown-body pre{
+	border: solid thin var(--color-border-default);
+}
+div.div-input{
+	margin-top: 8px;
+	overflow: auto;
+	width: 100%;
+	height: 7vh;
+}
+input.input{
+	background: #ffffffd7;
+	font-family: auto;
+	border: none;
+	outline: none;
+	box-sizing: border-box;
+	width: 80vw;
+	height: 100%;
+	padding: 0 2vw;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<title>ChatGPT Client</title>
+</head>
+<body>
+<container>
+<div class="div-chat" id="chat"></div>
+<div class="div-input">
+<input class="input" id="input" onkeydown="if(event.keyCode==13)submit();">
+</div>
+</container>
+</body>
+</html>

@@ -1,0 +1,63 @@
+[
+  {
+    "name": "track",
+    "description": "追踪指定股票的实时价格",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "description": "需要追踪的股票代码"
+        }
+      },
+      "required": [ "symbol" ]
+    }
+  },
+  {
+    "name": "tank",
+    "description": "控制坦克的运动",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "description": "控制坦克前进、后退、停止"
+        },
+        "turn": {
+          "description": "控制坦克左转、右转"
+        }
+      },
+      "required": [ "direction" ]
+    }
+  },
+  {
+    "name": "arm",
+    "description": "控制机械臂的运动",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "arm_direction": {
+          "description": "控制机械臂运动的方向，有前后左右上下"
+        },
+        "arm_distance": {
+          "description": "比如一点，一些，大一些，小一些"
+        }
+      },
+      "required": [ "arm_direction" ]
+    }
+  },
+  {
+    "name": "claw",
+    "description": "控制机械臂的运动",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "claw_direction": {
+          "description": "控制机械臂夹子运动，比如夹紧、松开、朝上、朝下"
+        },
+        "claw_distance": {
+          "description": "比如一点，一些，大一些，小一些"
+        }
+      },
+      "required": [ "claw_direction" ]
+    }
+  }
+]

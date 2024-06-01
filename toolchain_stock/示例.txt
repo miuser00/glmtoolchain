@@ -1,0 +1,2 @@
+发送 {"name": "track", "parameters": {"symbol": "601398"}
+返回 send:{"name":"工商银行","currentPrice":5.44,"highPrice":5.48,"lowPrice":5.42,"dateTime":"20240530155910","priceChange":-0.029999999999999361,"priceChangePercent":-0.54844606946982377}

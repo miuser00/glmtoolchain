@@ -1,0 +1,14 @@
+C:\D\projects\aig\app_bin\toolchain\stocktrack.exe.config
+C:\D\projects\aig\app_bin\toolchain\stocktrack.exe
+C:\D\projects\aig\app_bin\toolchain\stocktrack.pdb
+C:\D\projects\aig\App\toolchain_stock\stock\obj\Debug\stocktrack.csproj.AssemblyReference.cache
+C:\D\projects\aig\App\toolchain_stock\stock\obj\Debug\stock.Form1.resources
+C:\D\projects\aig\App\toolchain_stock\stock\obj\Debug\stocktrack.Properties.Resources.resources
+C:\D\projects\aig\App\toolchain_stock\stock\obj\Debug\stocktrack.csproj.GenerateResource.cache
+C:\D\projects\aig\App\toolchain_stock\stock\obj\Debug\stocktrack.csproj.CoreCompileInputs.cache
+C:\D\projects\aig\App\toolchain_stock\stock\obj\Debug\stocktrack.csproj.CopyComplete
+C:\D\projects\aig\App\toolchain_stock\stock\obj\Debug\stocktrack.exe
+C:\D\projects\aig\App\toolchain_stock\stock\obj\Debug\stocktrack.pdb
+C:\D\projects\aig\App\app_bin\toolchain\stocktrack.exe.config
+C:\D\projects\aig\App\app_bin\toolchain\stocktrack.exe
+C:\D\projects\aig\App\app_bin\toolchain\stocktrack.pdb
